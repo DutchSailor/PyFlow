@@ -95,7 +95,7 @@ class Variable(ISerializable):
 
     @dataType.setter
     def dataType(self, value):
-        assert(isinstance(value, str))
+        assert(isinstance(value, str) or isinstance(value, unicode))
         if value != self._dataType:
             self._dataType = value
             self.updatePackageName()
