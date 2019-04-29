@@ -20,6 +20,7 @@ from Qt.QtWidgets import QUndoView
 from Qt.QtWidgets import QToolButton
 from Qt.QtWidgets import QPushButton
 from Qt.QtWidgets import QSpacerItem
+from Qt.QtWidgets import QDockWidget
 
 from PyFlow import Packages
 from PyFlow.UI.Graph.Widget import GraphWidgetUI
@@ -34,6 +35,7 @@ from PyFlow.UI.Views.VariablesWidget import VariablesWidget
 from PyFlow.UI.Utils.StyleSheetEditor import StyleSheetEditor
 from PyFlow import INITIALIZE
 
+import PyFlow.UI.opengl as gl
 
 FILE_DIR = os.path.abspath(os.path.dirname(__file__))
 SETTINGS_PATH = os.path.join(FILE_DIR, "appConfig.ini")
@@ -74,6 +76,26 @@ class PyFlow(QMainWindow, GraphEditor_ui.Ui_MainWindow, AppBase):
         self._currentGraph = GraphWidgetUI(self, graphBase=GraphTree().getRootGraph())
         self.updateGraphTreeLocation()
         GraphTree().onGraphSwitched.connect(self.onRawGraphSwitched)
+
+        self.viewDock = QDockWidget(self)
+        self.viewDock.setMinimumSize(QtCore.QSize(80, 93))
+        self.addDockWidget(QtCore.Qt.DockWidgetArea(4), self.viewDock)
+        self.view = gl.GLViewWidget()
+        xgrid = gl.GLGridItem()
+        ## rotate x and y grids to face the correct direction
+        xgrid.rotate(0, 0, 1, 0)
+        ## scale each grid differently
+        xgrid.scale(10,10, 10)  
+        self.view.addItem(xgrid)    
+        self.viewDock.setWidget(self.view)
+        self.showView = QAction(self)
+        icon18 = QtGui.QIcon()
+        icon18.addPixmap(QtGui.QPixmap(":/icons/resources/variable.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.showView.setIcon(icon18)
+        self.showView.setObjectName("showView")
+        self.menuView.addAction(self.showView)
+        self.showView.triggered.connect(self.showview)
+
         self.SceneLayout.addWidget(self._currentGraph)
 
         self.actionVariables.triggered.connect(self.toggleVariables)
@@ -106,7 +128,8 @@ class PyFlow(QMainWindow, GraphEditor_ui.Ui_MainWindow, AppBase):
         self.fps = EDITOR_TARGET_FPS
         self.tick_timer = QtCore.QTimer()
         self.tick_timer.timeout.connect(self.mainLoop)
-
+    def showview(self):
+        self.viewDock.show()
     def onRawGraphSwitched(self, *args, **kwargs):
         old = kwargs['old']
         new = kwargs['new']

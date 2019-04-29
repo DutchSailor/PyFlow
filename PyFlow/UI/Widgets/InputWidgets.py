@@ -28,8 +28,9 @@ class IInputWidget(object):
             "setWidget of IInputWidget is not implemented")
 
     def blockWidgetSignals(self, bLock=False):
-        raise NotImplementedError(
-            "blockWidgetSignals of IInputWidget is not implemented")
+        pass
+        #raise NotImplementedError(
+        #    "blockWidgetSignals of IInputWidget is not implemented")
 
 
 class InputWidgetRaw(QWidget, IInputWidget):
