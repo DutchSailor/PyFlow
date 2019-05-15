@@ -112,10 +112,10 @@ class NodeName(QGraphicsTextItem):
             painter.setPen(self.defaultPen)
             font = painter.font()
             nameRect = QtCore.QRectF(self.boundingRect().topLeft(), QtCore.QPointF(self.parentItem().boundingRect().right(), self.boundingRect().bottom()))
-            nameRect -= self.nodeLabelMargin
+#--#            nameRect -= self.nodeLabelMargin
             painter.drawText(nameRect, QtCore.Qt.AlignLeft, self.parentItem().displayName)
             packageRect = QtCore.QRectF(self.boundingRect().topLeft(), QtCore.QPointF(self.parentItem().boundingRect().right(), self.boundingRect().bottom()))
-            packageRect -= self.nodePackageMargin
+#--#            packageRect -= self.nodePackageMargin
             font = painter.font()
             font.setPointSize(font.pointSize() * 0.5)
             font.setItalic(True)
