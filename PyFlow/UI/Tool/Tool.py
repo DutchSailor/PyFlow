@@ -58,6 +58,7 @@ class ShelfTool(ToolBase):
     def do(self):
         print(self.name(), "called!", self.canvas)
 
+import FreeCAD,FreeCADGui
 
 class DockTool(QtWidgets.QDockWidget, ToolBase):
     """docstring for DockTool."""
@@ -69,6 +70,9 @@ class DockTool(QtWidgets.QDockWidget, ToolBase):
         self.setAllowedAreas(QtCore.Qt.BottomDockWidgetArea | QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea | QtCore.Qt.TopDockWidgetArea)
         self.setMinimumSize(QtCore.QSize(80, 80))
         self.setObjectName(self.uniqueName())
+        q=FreeCADGui.getMainWindow()
+        q.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self)
+
 
     @staticmethod
     def defaultDockArea():

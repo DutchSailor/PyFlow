@@ -250,6 +250,20 @@ class PyFlow(QMainWindow, GraphEditor_ui.Ui_MainWindow):
 
             print(str("// saved: '{0}'".format(self._current_file_name)))
 
+    def loadfile(self,fpath = ''):
+            with open(fpath, 'r') as f:
+                data = json.load(f)
+                self.loadFromData(data, fpath)
+
+
+    def savefile(self,fpath = ''):
+            with open(fpath, 'w') as f:
+                saveData = self.graphManager.serialize()
+                json.dump(saveData, f, indent=4)
+
+
+
+
     def newFile(self, keepRoot=True):
         self.tick_timer.stop()
         self.tick_timer.timeout.disconnect()
