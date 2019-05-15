@@ -1,16 +1,22 @@
+# -*- coding: utf-8 -*-
+#-------------------------------------------------
+#-- freecad wrapper for pyflow
+#--
+#-- microelly 2019 
+#--
+#-- GNU Lesser General Public License (LGPL)
+#-------------------------------------------------
 
 
 import FreeCAD
 
+# the dummy methods for the workbench
 def test_BB():
 	FreeCAD.Console.PrintMessage("\ntest_B\n")
-
 
 def test_AA():
 	FreeCAD.Console.PrintMessage("\ntest_A\n")
 
-
-#-----------------------
 
 
 import FreeCAD,FreeCADGui
@@ -25,7 +31,8 @@ from time import clock
 import pkgutil
 import uuid
 
-#---------------------
+
+# Property dialog dockwindow inside FreeCAd methods
 
 from PyFlow.Packages.PyflowBase.Tools.PropertiesTool import PropertiesTool
 
@@ -54,21 +61,20 @@ def createPropTool():
 
 
 
-
-
-
-#--------------------
-
-
+# a hack to run the laucher widget subelements sinside freecad
+# 
 
 class myPyFlow(object):
+	'''the FreeCAD wrapper for the PyFlow.App.instance
+	'''
 
 	def __init__(self,inside=True):
 
+		FreeCAD.Console.PrintMessage("\nUsed QtGui .."+str(QtGui)+"\n")
 
-		FreeCAD.Console.PrintMessage(str(QtGui))
 
-		if inside:
+
+		if inside: # create a widget with tteh canvas and some pseudo menues
 			q=FreeCADGui.getMainWindow()
 
 			bb=QtGui.QDockWidget()
@@ -105,20 +111,23 @@ class myPyFlow(object):
 			pB = QtGui.QPushButton(QtGui.QIcon('icons:freecad.svg'), 'run a test action 4')
 			bl.addWidget(pB)
 
-
 			layout.addWidget(buttons)
 
 			bb.show()
 
+
 		from PyFlow.App import PyFlow
 		instance = PyFlow.instance()
+
+		# start the Pyflow canvas inside FreeCAD
 		a=instance.centralWidget().children()[1]
 
+		# create the property dialog dockwindow
 		createPropTool()
 
+		# connect the canvas widget with the Property dialog dockwindow
 		instance.canvasWidget.requestFillProperties.connect(onRequestFillPropertiesXX)
 		instance.canvasWidget.requestClearProperties.connect(onRequestClearPropertiesXX)
-
 
 
 
@@ -129,11 +138,11 @@ class myPyFlow(object):
 			from Qt.QtWidgets import QWidget
 
 			layout.addWidget(a)
-			instance.loadfile(fpath = '/home/thomas/Schreibtisch/z2.json')
+#			instance.loadfile(fpath = '/home/thomas/Schreibtisch/z2.json')
 
 		else:
 			instance.show()
-			instance.loadfile(fpath = '/home/thomas/Schreibtisch/aa2.json')
+			instance.loadfile(fpath = '/home/thomas/Schreibtisch/z2.json')
 
 	def refresh(self):
 		'''refresh the gui'''
@@ -178,22 +187,28 @@ def test_AA(inside=True):
 		App.setActiveDocument("aa")
 		App.ActiveDocument=App.getDocument("aa")
 		Gui.ActiveDocument=Gui.getDocument("aa")
-	except: pass
+	except: 
+		pass
 
-
-	from PyFlow.Tests.TestsBase import *
 	from PyFlow.Core.Common import *
-	from collections import Counter
+	from PyFlow import(
+		INITIALIZE,
+		GET_PACKAGES
+	)
 
+	from PyFlow.Core import(
+		GraphBase,
+		PinBase,
+		NodeBase,
+		GraphManager
+	)
 
-	
-	t=myPyFlow(inside) # wrapper for freecad
-	t.loadfile( '/home/thomas/Schreibtisch/z2.json')
+	INITIALIZE()
 
-	# t.instance is PyFlow.instance() !
+	t=myPyFlow(inside)
+	#t.loadfile( '/home/thomas/Schreibtisch/z2.json')
+
 	FreeCAD.PF=t
-	#return
-
 
 	packages = GET_PACKAGES()
 	intlib = packages['PyflowBase'].GetFunctionLibraries()["IntLib"]
@@ -203,9 +218,9 @@ def test_AA(inside=True):
 	addNode2 = NodeBase.initializeFromFunction(foos["add"])
 	addNode3 = NodeBase.initializeFromFunction(foos["add"])
 
-	addNode1.setPosition(-100,0)
-	addNode2.setPosition(0,150)
-	addNode3.setPosition(100,0)
+	addNode1.setPosition(-300,0)
+	addNode2.setPosition(0,50)
+	addNode3.setPosition(200,20)
 	addNode1.setData('a', 5)
 
 	t.man().activeGraph().addNode(addNode1)
@@ -215,8 +230,7 @@ def test_AA(inside=True):
 	connection = connectPins(addNode1[str('out')], addNode2[str('a')])
 	connection = connectPins(addNode2[str('out')], addNode3[str('a')])
 
-	t.refresh2()
-	#FreeCAD.t=t
+	t.refresh()
 
 
 def test_BB():
