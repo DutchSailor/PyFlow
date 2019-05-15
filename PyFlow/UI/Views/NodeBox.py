@@ -41,6 +41,7 @@ class NodeBoxTreeWidget(QTreeWidget):
     def __init__(self, parent, useDragAndDrop=True):
         super(NodeBoxTreeWidget, self).__init__(parent)
         style = "background-color: rgb(40, 40, 40);" +\
+                "color: rgb(240, 240, 240);" +\
                 "selection-background-color: rgb(50, 50, 50);" +\
                 "border-radius: 2px;" +\
                 "font-size: 14px;" +\

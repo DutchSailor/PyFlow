@@ -65,8 +65,6 @@ class myPyFlow(object):
 
 	def __init__(self,inside=True):
 
-#		inside=False
-#		inside=1
 
 		FreeCAD.Console.PrintMessage(str(QtGui))
 
@@ -76,11 +74,8 @@ class myPyFlow(object):
 			bb=QtGui.QDockWidget()
 			q.addDockWidget(QtCore.Qt.TopDockWidgetArea, bb)
 
-			bb.setWindowTitle("Node editor Version: Dock Window - 0.2")
+			bb.setWindowTitle("Node editor Version: Dock Window - 0.3")
 			bb.setMinimumSize(600, 500)
-
-			#bb.setFeatures(QtGui.QDockWidget.DockWidgetClosable|
-			#                         QtGui.QDockWidget.DockWidgetMovable)
 
 			bb.centralWidget = QtGui.QWidget()
 			bb.setWidget(bb.centralWidget)
@@ -134,7 +129,7 @@ class myPyFlow(object):
 			from Qt.QtWidgets import QWidget
 
 			layout.addWidget(a)
-#			instance.loadfile(fpath = '/home/thomas/Schreibtisch/aa2.json')
+			instance.loadfile(fpath = '/home/thomas/Schreibtisch/z2.json')
 
 		else:
 			instance.show()
@@ -150,6 +145,10 @@ class myPyFlow(object):
 			self.instance.canvasWidget.createWrappersForGraph(graph)
 
 		self.instance.graphManager.selectRootGraph()
+
+	def refresh2(self):
+		self.instance.savefile('/home/thomas/Schreibtisch/refresh.json')
+		self.instance.loadfile('/home/thomas/Schreibtisch/refresh.json')
 
 	def loadA(self):
 		self.loadfile('/home/thomas/Schreibtisch/aa2.json')
@@ -189,11 +188,11 @@ def test_AA(inside=True):
 
 	
 	t=myPyFlow(inside) # wrapper for freecad
-	#t.loadfile( '/home/thomas/Schreibtisch/aa2.json')
+	t.loadfile( '/home/thomas/Schreibtisch/z2.json')
 
 	# t.instance is PyFlow.instance() !
 	FreeCAD.PF=t
-	return
+	#return
 
 
 	packages = GET_PACKAGES()
@@ -205,7 +204,7 @@ def test_AA(inside=True):
 	addNode3 = NodeBase.initializeFromFunction(foos["add"])
 
 	addNode1.setPosition(-100,0)
-	addNode2.setPosition(0,-150)
+	addNode2.setPosition(0,150)
 	addNode3.setPosition(100,0)
 	addNode1.setData('a', 5)
 
@@ -216,7 +215,7 @@ def test_AA(inside=True):
 	connection = connectPins(addNode1[str('out')], addNode2[str('a')])
 	connection = connectPins(addNode2[str('out')], addNode3[str('a')])
 
-	#t.refresh()
+	t.refresh2()
 	#FreeCAD.t=t
 
 
