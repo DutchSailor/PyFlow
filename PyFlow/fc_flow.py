@@ -8,7 +8,7 @@
 #-------------------------------------------------
 
 
-import FreeCAD
+import FreeCAD,FreeCADGui
 
 # the dummy methods for the workbench
 def test_BB():
@@ -37,10 +37,12 @@ import uuid
 from PyFlow.Packages.PyflowBase.Tools.PropertiesTool import PropertiesTool
 
 def onRequestFillPropertiesXX(propertiesFillDelegate):
+	from PyFlow.Packages.PyflowBase.Tools.PropertiesTool import PropertiesTool
 	try:
 		toolInstance=FreeCAD.toolInstance
 	except:
 		toolInstance=PropertiesTool()
+		toolInstance.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 		FreeCAD.toolInstance=toolInstance
 
 	toolInstance.show()
@@ -51,12 +53,15 @@ def onRequestFillPropertiesXX(propertiesFillDelegate):
 def onRequestClearPropertiesXX():
 	toolInstance.clear()
 
-def createPropTool():
+def createPropTool(arg=None):
+	from PyFlow.Packages.PyflowBase.Tools.PropertiesTool import PropertiesTool
 	try:
 		toolInstance=FreeCAD.toolInstance
+		toolInstance.show()
 	except:
 		toolInstance=PropertiesTool()
 		FreeCAD.toolInstance=toolInstance
+		toolInstance.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 	toolInstance.show()
 
 
@@ -78,9 +83,11 @@ class myPyFlow(object):
 			q=FreeCADGui.getMainWindow()
 
 			bb=QtGui.QDockWidget()
+			#
+
 			q.addDockWidget(QtCore.Qt.TopDockWidgetArea, bb)
 
-			bb.setWindowTitle("Node editor Version: Dock Window - 0.3")
+			bb.setWindowTitle("Node editor Version: Dock Window - 0.4")
 			bb.setMinimumSize(600, 500)
 
 			bb.centralWidget = QtGui.QWidget()
@@ -108,12 +115,14 @@ class myPyFlow(object):
 			pB = QtGui.QPushButton(QtGui.QIcon('icons:freecad.svg'), 'load dialog')
 			bl.addWidget(pB)
 			pB.clicked.connect(self.load)
-			pB = QtGui.QPushButton(QtGui.QIcon('icons:freecad.svg'), 'run a test action 4')
+			pB = QtGui.QPushButton(QtGui.QIcon('icons:freecad.svg'), 'Properties Tool')
 			bl.addWidget(pB)
+			pB.clicked.connect(createPropTool)
 
 			layout.addWidget(buttons)
 
 			bb.show()
+			self.dockwidget=bb
 
 
 		from PyFlow.App import PyFlow
@@ -181,6 +190,19 @@ class myPyFlow(object):
 def test_AA(inside=True):
 	'''start the node graph editor'''
 
+	if 1:
+		import sys
+		sms=sys.modules.keys()
+		for m in sms:
+
+			if m.startswith('PyFlow'):
+				print m
+				del(sys.modules[m])
+	try:
+		FreeCAD.toolInstance.deleteLater()
+		del(FreeCAD.toolInstance)
+	except:
+		pass
 
 	try:
 		FreeCAD.open(u"/home/thomas/aa.FCStd")
@@ -211,6 +233,36 @@ def test_AA(inside=True):
 	FreeCAD.PF=t
 
 	packages = GET_PACKAGES()
+
+
+	fcn=packages['PyflowBase'].GetNodeClasses()["compound"]
+	fc=fcn('group')
+	t.man().activeGraph().addNode(fc)
+
+
+	fn=packages['FreeCAD'].GetNodeClasses()["FreeCAD_Node"]
+
+	f=fn('MyFreeCadN')
+	f.setPosition(50,-100)
+	t.man().activeGraph().addNode(f)
+
+	try: 
+		ss=FreeCADGui.Selection.getSelection()
+		for i,s in enumerate(ss):
+			f=fn(s.Label)
+			f.setPosition(-100+i*120,120-i*30)
+			t.man().activeGraph().addNode(f)
+	except:
+		f=fn('MyFreeCadN')
+		f.setPosition(50,-100)
+		t.man().activeGraph().addNode(f)
+
+	t.man().selectGraph(fc.name)
+	f=fn('My_Sub_FC')
+	t.man().activeGraph().addNode(f)
+
+	t.man().selectGraph(str('root'))
+
 	intlib = packages['PyflowBase'].GetFunctionLibraries()["IntLib"]
 	foos = intlib.getFunctions()
 
@@ -218,20 +270,56 @@ def test_AA(inside=True):
 	addNode2 = NodeBase.initializeFromFunction(foos["add"])
 	addNode3 = NodeBase.initializeFromFunction(foos["add"])
 
-	addNode1.setPosition(-300,0)
-	addNode2.setPosition(0,50)
-	addNode3.setPosition(200,20)
+	addNode1.setPosition(-200,-150)
+	addNode2.setPosition(-150,-70)
+	addNode3.setPosition(200,-100)
 	addNode1.setData('a', 5)
 
 	t.man().activeGraph().addNode(addNode1)
 	t.man().activeGraph().addNode(addNode2)
 	t.man().activeGraph().addNode(addNode3)
 
-	connection = connectPins(addNode1[str('out')], addNode2[str('a')])
-	connection = connectPins(addNode2[str('out')], addNode3[str('a')])
+	connection = connectPins(addNode1[str('out')], addNode3[str('a')])
+	connection = connectPins(addNode2[str('out')], addNode3[str('b')])
+
+	FreeCAD.PF.dockwidget.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+
+	#f.setName("hugo")
+	FreeCAD.f=f
 
 	t.refresh()
 
 
 def test_BB():
 	test_AA(inside=False)
+
+
+'''
+
+t=FreeCAD.PF
+m=t.man()
+m.graphsDict
+g=m.activeGraph()
+for n in g.getNodes():
+	print n.getName()
+	if n.getName()=='add1':
+		n.setName("HUHU2")
+
+t.refresh()	
+
+'''
+
+
+
+'''
+FreeCAD.toolInstance.deleteLater()
+del(FreeCAD.toolInstance)
+
+Qt::WA_DeleteOnClose
+setAttribute(Qt::WA_DeleteOnClose);
+Qt.QtCore.Qt.WA_DeleteOnClose
+
+
+
+FreeCAD.PF.dockwidget.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+'''

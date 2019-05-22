@@ -81,7 +81,8 @@ class NodeName(QGraphicsTextItem):
 
     @staticmethod
     def IsRenamable():
-        return False
+        return True
+        #--#return False
 
     def keyPressEvent(self, event):
         key = event.key()
