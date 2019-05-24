@@ -5,6 +5,7 @@ from PyFlow.UI.UIInterfaces import IPackage
 
 # Pins
 from PyFlow.Packages.PyflowBase.Pins.AnyPin import AnyPin
+from PyFlow.Packages.PyflowBase.Pins.VectorPin import VectorPin
 from PyFlow.Packages.PyflowBase.Pins.BoolPin import BoolPin
 from PyFlow.Packages.PyflowBase.Pins.ExecPin import ExecPin
 from PyFlow.Packages.PyflowBase.Pins.FloatPin import FloatPin
@@ -109,6 +110,7 @@ _NODES = {
 
 _PINS = {
     AnyPin.__name__: AnyPin,
+    VectorPin.__name__: VectorPin,
     BoolPin.__name__: BoolPin,
     ExecPin.__name__: ExecPin,
     FloatPin.__name__: FloatPin,

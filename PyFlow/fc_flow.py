@@ -31,6 +31,8 @@ from time import clock
 import pkgutil
 import uuid
 
+sys.path.append('/usr/local/lib/python3.4/dist-packages/')
+# multipledispach, blinker,  
 
 # Property dialog dockwindow inside FreeCAd methods
 
@@ -185,18 +187,19 @@ class myPyFlow(object):
 		return self.instance.graphManager
 
 
+from PyFlow.Core.Common import *
 
 
 def test_AA(inside=True):
 	'''start the node graph editor'''
 
-	if 1:
+	if 0:
 		import sys
 		sms=sys.modules.keys()
 		for m in sms:
 
 			if m.startswith('PyFlow'):
-				print m
+				print(m)
 				del(sys.modules[m])
 	try:
 		FreeCAD.toolInstance.deleteLater()
@@ -212,7 +215,7 @@ def test_AA(inside=True):
 	except: 
 		pass
 
-	from PyFlow.Core.Common import *
+	#from PyFlow.Core.Common import *
 	from PyFlow import(
 		INITIALIZE,
 		GET_PACKAGES
@@ -301,7 +304,7 @@ m=t.man()
 m.graphsDict
 g=m.activeGraph()
 for n in g.getNodes():
-	print n.getName()
+	print(n.getName())
 	if n.getName()=='add1':
 		n.setName("HUHU2")
 

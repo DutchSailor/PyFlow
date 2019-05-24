@@ -16,7 +16,7 @@ def getPinDomain():
 		v=getattr(s,prop)
 		typ=v.__class__.__name__ 
 		if v.__class__.__name__ =='Quantity':
-			print v.Value.__class__.__name__
+			print(v.Value.__class__.__name__)
 			typ=v.Value.__class__.__name__
 		if typ in ['bool','float','unicode']:
 			if prop not in ['MapReversed','AttacherType','MapPathParameter']:
@@ -78,7 +78,9 @@ class FreeCAD_Node(NodeBase):
 		self.fco_label = self.createInputPin('FCO_Label', 'StringPin')
 		self.fco_name = self.createInputPin('FCO_Name', 'StringPin')
 		self.defaultPin = self.createOutputPin('changed', 'ExecPin')
-
+		self.vin = self.createInputPin('vec', 'VectorPin')
+		self.vout = self.createOutputPin('vecout', 'VectorPin')
+		FreeCAD.vin=self.vin
 
 	def addOutPin(self,name=None,typ=None):
 
@@ -158,6 +160,8 @@ class FreeCAD_Node(NodeBase):
 
 		namePinOutputsMap = self.namePinOutputsMap
 		FreeCAD.Console.PrintMessage(str(namePinOutputsMap)+"!--!\n")
+
+		FreeCAD.vin=self.vin
 
 		if string in namePinOutputsMap:
 			FreeCAD.Console.PrintMessage(string+"\n")

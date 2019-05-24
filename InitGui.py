@@ -148,7 +148,7 @@ class _Command2():
 				modul = self.name
 			Gui.doCommand("import " + modul)
 			Gui.doCommand("import " + self.lmod)
-			Gui.doCommand("reload(" + self.lmod + ")")
+			#Gui.doCommand("reload(" + self.lmod + ")")
 			docstring = "print();print(" + re.sub(r'\(.*\)', '.__doc__'+")", self.command)
 
 			Gui.doCommand(docstring)
