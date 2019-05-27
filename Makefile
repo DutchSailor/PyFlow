@@ -127,3 +127,6 @@ tas:
 
 run:
 	python launcher.py
+
+py3:
+	/media/thomas/85e3e0e8-8016-4dda-a113-1560ebc7b48c/FreeCAD_0.19.16121_Conda_Py3Qt5_glibc2.12-x86_64.AppImage
