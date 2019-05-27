@@ -138,7 +138,7 @@ class _Command2():
 	def Activated(self):
 
 		import re
-		ta=True
+		ta=False
 		if ta:
 			FreeCAD.ActiveDocument.openTransaction(self.name)
 		if self.command != '':
@@ -148,10 +148,6 @@ class _Command2():
 				modul = self.name
 			Gui.doCommand("import " + modul)
 			Gui.doCommand("import " + self.lmod)
-			#Gui.doCommand("reload(" + self.lmod + ")")
-			docstring = "print();print(" + re.sub(r'\(.*\)', '.__doc__'+")", self.command)
-
-			Gui.doCommand(docstring)
 			Gui.doCommand(self.command)
 		if ta:
 			FreeCAD.ActiveDocument.commitTransaction()
@@ -193,6 +189,7 @@ if FreeCAD.GuiUp:
 
 	current += [c3bI(["PyFlow"], always, 'fc_flow', 'test_AA',icon="/../icons/AA")]
 	current += [c3bI(["PyFlow"], always, 'fc_flow', 'test_BB',icon="/../icons/BB")]
+	current += [c3bI(["PyFlow"], always, 'fc_flow', 'reset',icon=None)]
 
 
 	toolbars = [

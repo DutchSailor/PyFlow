@@ -71,17 +71,17 @@ class AAList(QtWidgets.QDialog):
 		self.close()
 
 
-class FreeCAD_Node(NodeBase):
+class FreeCAD_Vector(NodeBase):
 	def __init__(self, name='NN'):
-		super(FreeCAD_Node, self).__init__(name)
+		super(FreeCAD_Vector, self).__init__(name)
 		self.inExecPin = self.createInputPin('inExec', 'ExecPin', None, self.compute)
-		self.fco_label = self.createInputPin('FCO_Label', 'StringPin')
-		self.fco_name = self.createInputPin('FCO_Name', 'StringPin')
+#		self.fco_label = self.createInputPin('FCO_Label', 'StringPin')
+#		self.fco_name = self.createInputPin('FCO_Name', 'StringPin')
 		self.defaultPin = self.createOutputPin('changed', 'ExecPin')
-		self.vin = self.createInputPin('vec', 'VectorPin')
+		self.vx = self.createInputPin('x', 'FloatPin')
+		self.vy = self.createInputPin('y', 'FloatPin')
+		self.vz = self.createInputPin('z', 'FloatPin')
 		self.vout = self.createOutputPin('vecout', 'VectorPin')
-#		self.ufo = self.createOutputPin('ufo', 'UfoPin')
-		FreeCAD.vin=self.vin
 
 	def addOutPin(self,name=None,typ=None):
 
@@ -156,22 +156,9 @@ class FreeCAD_Node(NodeBase):
 		return 'Execute output depending on input string'
 
 	def compute(self, *args, **kwargs):
-		FreeCAD.Console.PrintMessage("compute " + str(self.getName())+"!\n")
+		FreeCAD.Console.PrintMessage("\ncompute " + str(self.getName())+"!\n")
 		FreeCAD.tt=self
 
-		self.vout.setData(self.vin.getData())
+		self.vout.setData(FreeCAD.Vector(self.vx.getData(),self.vy.getData(),self.vz.getData()))
+		self.defaultPin.call(*args, **kwargs)
 
-		namePinOutputsMap = self.namePinOutputsMap
-		FreeCAD.Console.PrintMessage("namePinOutputsMap:\n")
-		FreeCAD.Console.PrintMessage(str(namePinOutputsMap)+"!--!\n")
-
-		FreeCAD.vin=self.vin
-
-		if string in namePinOutputsMap:
-			FreeCAD.Console.PrintMessage(string+"\n")
-			namePinOutputsMap[string].call(*args, **kwargs)
-		else:
-			FreeCAD.Console.PrintMessage("changed pin\n")
-			self.defaultPin.call(*args, **kwargs)
-
-		FreeCAD.Console.PrintMessage("compute " + str(self.getName())+"!-!!-!\n")

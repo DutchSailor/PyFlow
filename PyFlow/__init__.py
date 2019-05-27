@@ -53,6 +53,7 @@ def getPinDefaultValueByType(dataType):
 def CreateRawPin(name, owningNode, dataType, direction, **kwds):
     pinClass = findPinClassByType(dataType)
     if pinClass is None:
+        print("warning: cannot create pin for " + str(dataType))
         return None
     inst = pinClass(name, owningNode, direction, **kwds)
     owningNode.pins.add(inst)

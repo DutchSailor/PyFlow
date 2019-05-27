@@ -188,34 +188,23 @@ class myPyFlow(object):
 
 
 from PyFlow.Core.Common import *
-
+from say import say
 
 def test_AA(inside=True):
 	'''start the node graph editor'''
 
-	if 0:
-		import sys
-		sms=sys.modules.keys()
-		for m in sms:
-
-			if m.startswith('PyFlow'):
-				print(m)
-				del(sys.modules[m])
+	say("start testAA")
+	try:
+		FreeCAD.PF.dockwidget.hide()
+	except:
+		pass
 	try:
 		FreeCAD.toolInstance.deleteLater()
 		del(FreeCAD.toolInstance)
 	except:
 		pass
 
-	try:
-		FreeCAD.open(u"/home/thomas/aa.FCStd")
-		App.setActiveDocument("aa")
-		App.ActiveDocument=App.getDocument("aa")
-		Gui.ActiveDocument=Gui.getDocument("aa")
-	except: 
-		pass
 
-	#from PyFlow.Core.Common import *
 	from PyFlow import(
 		INITIALIZE,
 		GET_PACKAGES
@@ -237,17 +226,48 @@ def test_AA(inside=True):
 
 	packages = GET_PACKAGES()
 
+	#fc=packages['PyflowBase'].GetNodeClasses()["makeFloat"]
+	defaultLib = packages['PyflowBase'].GetFunctionLibraries()["DefaultLib"]
+	defaultLibFoos = defaultLib.getFunctions()
+
+	fx = NodeBase.initializeFromFunction(defaultLibFoos["makeFloat"])
+	fy = NodeBase.initializeFromFunction(defaultLibFoos["makeFloat"])
+
+	FreeCAD.fx=fx
+	
+	t.man().activeGraph().addNode(fx)
+	t.man().activeGraph().addNode(fy)
+	fx.setPosition(-450,-100)
+	fy.setPosition(-450,100)
 
 	fcn=packages['PyflowBase'].GetNodeClasses()["compound"]
 	fc=fcn('group')
 	t.man().activeGraph().addNode(fc)
+	fc.setPosition(-50,110)
 
+	fcn=packages['FreeCAD'].GetNodeClasses()["FreeCAD_Console"]
+	fout=fcn('My_Console')
+	t.man().activeGraph().addNode(fout)
+	fout.setPosition(40,50)
 
 	fn=packages['FreeCAD'].GetNodeClasses()["FreeCAD_Node"]
 
 	f=fn('MyFreeCadN')
 	f.setPosition(50,-100)
 	t.man().activeGraph().addNode(f)
+	
+
+	fna=packages['FreeCAD'].GetNodeClasses()["FreeCAD_Vector"]
+
+	f=fna('MyVec')
+	f.setPosition(-300,-0)
+	t.man().activeGraph().addNode(f)
+	connection = connectPins(fx[str('out')], f[str('x')])
+	connection = connectPins(fy[str('out')], f[str('y')])
+	connection = connectPins(f[str('changed')], fout[str('inExec')])
+	connection = connectPins(f[str('vecout')], fout[str('entity')])
+
+	fn=packages['FreeCAD'].GetNodeClasses()["FreeCAD_Node"]
 
 	try: 
 		ss=FreeCADGui.Selection.getSelection()
@@ -295,6 +315,31 @@ def test_AA(inside=True):
 
 def test_BB():
 	test_AA(inside=False)
+
+def reset():
+	if 10:
+		import sys
+		sms=sys.modules.keys()
+		for m in sms:
+
+			if m.startswith('PyFlow'):
+				print(m)
+				del(sys.modules[m])
+	try:
+		FreeCAD.toolInstance.deleteLater()
+		del(FreeCAD.toolInstance)
+	except:
+		pass
+
+	if 10:
+		try:
+			FreeCAD.open(u"/home/thomas/aa.FCStd")
+			App=FreeCAD
+			App.setActiveDocument("aa")
+			App.ActiveDocument=App.getDocument("aa")
+			Gui.ActiveDocument=Gui.getDocument("aa")
+		except: 
+			pass
 
 
 '''
