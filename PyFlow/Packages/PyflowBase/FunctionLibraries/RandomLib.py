@@ -31,3 +31,13 @@ class RandomLib(FunctionLibraryBase):
         '''
         random.shuffle(seq)
         Result(seq)
+
+
+    @staticmethod
+    @IMPLEMENT_NODE(returns=None, nodeType=NodeTypes.Callable, meta={'Category': 'Math|random', 'Keywords': []})
+    # Return a random float N such that a <= N <= b
+    def random(start=('FloatPin', 0), end=('FloatPin', 10), Result=("Reference", ('FloatPin', 0))):
+        '''
+        Return a random float f such that start <= f <= end
+        '''
+        Result(start+(end-start)*random.random())
