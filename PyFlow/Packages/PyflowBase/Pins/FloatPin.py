@@ -2,6 +2,7 @@ from PyFlow.Core import PinBase
 from PyFlow.Core.Common import *
 from PyFlow.UI.Utils.Settings import Colors
 
+#import FreeCAD
 
 class FloatPin(PinBase):
     """doc string for FloatPin"""
@@ -32,8 +33,19 @@ class FloatPin(PinBase):
         return float(data)
 
     def setData(self, data):
+
+        try:
+            self.onBeforeChange(self,self._data,data)
+        except: 
+            pass
+
         try:
             self._data = self.processData(data)
         except:
             self._data = self.defaultValue()
         PinBase.setData(self, self._data)
+
+        try:
+            self.onChanged(self,self._data)
+        except: 
+            pass
