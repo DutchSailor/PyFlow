@@ -195,7 +195,8 @@ def test_AA(inside=True):
 
 	say("start testAA")
 	try:
-		FreeCAD.PF.dockwidget.hide()
+		FreeCAD.PF.dockwidget.deleteLater()
+		#del(FreeCAD.PF.dockwidget)
 	except:
 		pass
 	try:
@@ -230,34 +231,46 @@ def test_AA(inside=True):
 	defaultLib = packages['PyflowBase'].GetFunctionLibraries()["DefaultLib"]
 	defaultLibFoos = defaultLib.getFunctions()
 
+	randLibFoos = packages['PyflowBase'].GetFunctionLibraries()["RandomLib"].getFunctions()
+
 	fx = NodeBase.initializeFromFunction(defaultLibFoos["makeFloat"])
 	fy = NodeBase.initializeFromFunction(defaultLibFoos["makeFloat"])
+	fz = NodeBase.initializeFromFunction(defaultLibFoos["makeFloat"])
+	fz = NodeBase.initializeFromFunction(randLibFoos["random"])
 
 	FreeCAD.fx=fx
 	
 	t.man().activeGraph().addNode(fx)
 	t.man().activeGraph().addNode(fy)
+	t.man().activeGraph().addNode(fz)
 	fx.setPosition(-450,-100)
-	fy.setPosition(-450,100)
+	fy.setPosition(-450,20)
+	fz.setPosition(-450,100)
 
 	fcn=packages['PyflowBase'].GetNodeClasses()["compound"]
 	fc=fcn('group')
 	t.man().activeGraph().addNode(fc)
-	fc.setPosition(-50,110)
+	fc.setPosition(350,-110)
 
-	fcn=packages['FreeCAD'].GetNodeClasses()["FreeCAD_Console"]
+	fcn=packages['PF_FreeCAD'].GetNodeClasses()["FreeCAD_Console"]
 	fout=fcn('My_Console')
 	t.man().activeGraph().addNode(fout)
-	fout.setPosition(40,50)
+	fout.setPosition(40,0)
 
-	fn=packages['FreeCAD'].GetNodeClasses()["FreeCAD_Node"]
+	fn=packages['PF_FreeCAD'].GetNodeClasses()["FreeCAD_Node"]
 
 	f=fn('MyFreeCadN')
 	f.setPosition(50,-100)
 	t.man().activeGraph().addNode(f)
 	
+	fn=packages['PF_FreeCAD'].GetNodeClasses()["FreeCAD_Placement"]
 
-	fna=packages['FreeCAD'].GetNodeClasses()["FreeCAD_Vector"]
+	fp=fn('MyBox')
+	fp.setPosition(350,50)
+	t.man().activeGraph().addNode(fp)
+	
+
+	fna=packages['PF_FreeCAD'].GetNodeClasses()["FreeCAD_Vector"]
 
 	f=fna('MyVec')
 	f.setPosition(-300,-0)
@@ -265,9 +278,15 @@ def test_AA(inside=True):
 	connection = connectPins(fx[str('out')], f[str('x')])
 	connection = connectPins(fy[str('out')], f[str('y')])
 	connection = connectPins(f[str('changed')], fout[str('inExec')])
-	connection = connectPins(f[str('vecout')], fout[str('entity')])
 
-	fn=packages['FreeCAD'].GetNodeClasses()["FreeCAD_Node"]
+	connection = connectPins(f[str('vecout')], fout[str('entity')])
+	connection = connectPins(f[str('vecout')], fp[str('Placement_Base')])
+	connection = connectPins(fout[str('outExec')], fp[str('inExec')])
+
+	connection = connectPins(fz[str('Result')], fp[str('arc')])
+	connection = connectPins(fz[str('outExec')], fp[str('inExec')])
+
+	fn=packages['PF_FreeCAD'].GetNodeClasses()["FreeCAD_Node"]
 
 	try: 
 		ss=FreeCADGui.Selection.getSelection()
@@ -331,7 +350,7 @@ def reset():
 	except:
 		pass
 
-	if 10:
+	if 0:
 		try:
 			FreeCAD.open(u"/home/thomas/aa.FCStd")
 			App=FreeCAD
@@ -340,6 +359,27 @@ def reset():
 			Gui.ActiveDocument=Gui.getDocument("aa")
 		except: 
 			pass
+
+	App=FreeCAD
+	Gui=FreeCADGui
+	try:
+		a=App.getDocument("Unnamed")
+	except:
+		App.newDocument("Unnamed")
+
+	App.setActiveDocument("Unnamed")
+	App.ActiveDocument=App.getDocument("Unnamed")
+	Gui.ActiveDocument=Gui.getDocument("Unnamed")
+	t=App.ActiveDocument.getObject('Torus')
+	if t == None:
+		t=App.ActiveDocument.addObject("Part::Torus","Torus")
+
+	b=App.ActiveDocument.getObject('Box')
+	if b == None:
+		App.ActiveDocument.addObject("Part::Box","Box")
+	App.ActiveDocument.recompute()
+	Gui.activeDocument().activeView().viewTop()
+	Gui.SendMsgToActiveView("ViewFit")
 
 
 '''
