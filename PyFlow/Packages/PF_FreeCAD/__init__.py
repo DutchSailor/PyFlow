@@ -1,22 +1,21 @@
-PACKAGE_NAME = 'FreeCAD'
+PACKAGE_NAME = 'PF_FreeCAD'
 from collections import OrderedDict
 from PyFlow.UI.UIInterfaces import IPackage
 
 # Pins
-#from PyFlow.Packages.FreeCAD.Pins.QuatPin import QuatPin
-from PyFlow.Packages.FreeCAD.Pins.VectorPin import VectorPin
+from PyFlow.Packages.PF_FreeCAD.Pins.VectorPin import VectorPin
 
 # Function based nodes
-from PyFlow.Packages.FreeCAD.Nodes.FreeCAD_Placement import FreeCAD_Placement
-from PyFlow.Packages.FreeCAD.Nodes.FreeCAD_Node import FreeCAD_Node
-from PyFlow.Packages.FreeCAD.Nodes.FreeCAD_Vector import FreeCAD_Vector
-from PyFlow.Packages.FreeCAD.Nodes.FreeCAD_Console import FreeCAD_Console
+from PyFlow.Packages.PF_FreeCAD.Nodes.FreeCAD_Placement import FreeCAD_Placement
+from PyFlow.Packages.PF_FreeCAD.Nodes.FreeCAD_Node import FreeCAD_Node
+from PyFlow.Packages.PF_FreeCAD.Nodes.FreeCAD_Vector import FreeCAD_Vector
+from PyFlow.Packages.PF_FreeCAD.Nodes.FreeCAD_Console import FreeCAD_Console
 
 
 # Factories
-from PyFlow.Packages.FreeCAD.Factories.PinInputWidgetFactory import getInputWidget
-from PyFlow.Packages.FreeCAD.Factories.UINodeFactory import createUINode
-from PyFlow.Packages.FreeCAD.Factories.UIPinFactory import createUIPin
+from PyFlow.Packages.PF_FreeCAD.Factories.PinInputWidgetFactory import getInputWidget
+from PyFlow.Packages.PF_FreeCAD.Factories.UINodeFactory import createUINode
+from PyFlow.Packages.PF_FreeCAD.Factories.UIPinFactory import createUIPin
 
 
 _FOO_LIBS = {
@@ -38,9 +37,9 @@ _PINS = {
 _TOOLS = OrderedDict()
 
 
-class FreeCAD(IPackage):
+class PF_FreeCAD(IPackage):
     def __init__(self):
-        super(FreeCAD, self).__init__()
+        super(PF_FreeCAD, self).__init__()
 
     @staticmethod
     def GetFunctionLibraries():
