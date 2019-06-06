@@ -85,9 +85,14 @@ def INITIALIZE():
     # TODO: Check for duplicated package names
     for importer, modname, ispkg in pkgutil.iter_modules(Packages.__path__):
         if ispkg:
-            mod = importer.find_module(modname).load_module(modname)
-            package = getattr(mod, modname)()
-            __PACKAGES[modname] = package
+            try:
+                mod = importer.find_module(modname).load_module(modname)
+                package = getattr(mod, modname)()
+                __PACKAGES[modname] = package
+            except:
+                # ignore packages with errors
+                print ("ignore "+ modname)
+                pass
 
     for name, package in __PACKAGES.items():
         packageName = package.__class__.__name__
