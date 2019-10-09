@@ -55,7 +55,7 @@ class FloatInputWidgetSimple(InputWidgetSingle):
             if kwds["pinAnnotations"] != None and "Step" in kwds["pinAnnotations"]:
                 self.sb.setSingleStep(kwds["pinAnnotations"]["Step"])
             else:
-                self.sb.setSingleStep(FLOAT_SINGLE_STEP)
+                self.sb.setSingleStep(0.01)
 
         self.setWidget(self.sb)
         self.sb.valueChanged.connect(self.dataSetCallback)
