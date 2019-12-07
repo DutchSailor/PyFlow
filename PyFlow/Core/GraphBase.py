@@ -190,9 +190,6 @@ class GraphBase(ISerializable):
         :type jsonData: dict
         """
         self.clear()
-        parentGraphName = jsonData['parentGraphName']
-        parentGraph = self.graphManager.findGraph(parentGraphName)
-        self.parentGraph = parentGraph
         self.name = self.graphManager.getUniqGraphName(jsonData['name'])
         self.category = jsonData['category']
         self.setIsRoot(jsonData['isRoot'])
@@ -219,27 +216,31 @@ class GraphBase(ISerializable):
                 for linkData in nodeOutputJson['linkedTo']:
                     try:
                         lhsNode = self._nodes[uuid.UUID(linkData["lhsNodeUid"])]
-                    except:
+                    except Exception as e:
                         lhsNode = self.findNode(linkData["lhsNodeName"])
 
                     try:
                         lhsPin = lhsNode.orderedOutputs[linkData["outPinId"]]
-                    except:
+                    except Exception as e:
+                        print("lhsPin not found {0}".format(str(linkData)))
                         continue
 
                     try:
                         rhsNode = self._nodes[uuid.UUID(linkData["rhsNodeUid"])]
-                    except:
+                    except Exception as e:
                         rhsNode = self.findNode(linkData["rhsNodeName"])
 
                     try:
                         rhsPin = rhsNode.orderedInputs[linkData["inPinId"]]
-                    except:
+                    except Exception as e:
                         continue
 
                     if not arePinsConnected(lhsPin, rhsPin):
                         connected = connectPins(lhsPin, rhsPin)
-                        assert(connected is True), "Failed to restore connection"
+                        # assert(connected is True), "Failed to restore connection"
+                        if not connected:
+                            print("Failed to restore connection", lhsPin, rhsPin)
+                            connectPins(lhsPin, rhsPin)
 
     def remove(self):
         """Removes this graph as well as child graphs. Deepest graphs will be removed first
@@ -254,7 +255,7 @@ class GraphBase(ISerializable):
         """Clears content of this graph as well as child graphs. Deepest graphs will be cleared first
         """
         # graphs should be cleared from leafs to root
-        for childGraph in self.childGraphs:
+        for childGraph in set(self.childGraphs):
             childGraph.clear()
 
         # clear itself

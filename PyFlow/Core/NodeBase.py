@@ -130,11 +130,14 @@ class NodeBase(INode):
             self.__wrapperJsonData.clear()
             self.__wrapperJsonData = None
             return dt
-        except:
+        except Exception as e:
             return None
 
     def isValid(self):
         return self._lastError is None
+
+    def getLastErrorMessage(self):
+        return self._lastError
 
     def clearError(self):
         self._lastError = None
@@ -675,12 +678,6 @@ class NodeBase(INode):
             if p.name == name:
                 return p
 
-        if uid in inputs:
-            return inputs[uid]
-        if uid in outputs:
-            return outputs[uid]
-        return None
-
     def postCreate(self, jsonTemplate=None):
         """Called after node was added to graph
 
@@ -804,8 +801,6 @@ class NodeBase(INode):
         # generate compute method from function
         def compute(self, *args, **kwargs):
             # arguments will be taken from inputs
-            if not self.isValid():
-                return
             kwds = {}
             for i in list(self.inputs.values()):
                 if not i.isExec():

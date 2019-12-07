@@ -40,7 +40,7 @@ class PinBase(IPin):
     :type _packageName: str
 
     Signals:
-        * **serializationHook** : Fired when Serialize Pin called, so Ui wrapers can append data to the serialization
+        * **serializationHook** : Fired when Serialize Pin called, so Ui wrapers can append data to the serialization object
         * **onPinConnected** : Fired when a new connection is made to this Pin, sends other Pin
         * **onPinDisconnected** : Fired when some disconnection is made to this Pin, sends other Pin
         * **nameChanged** : Fired when pin.setName() called, sends New Name
@@ -150,7 +150,7 @@ class PinBase(IPin):
         try:
             dt = self.__wrapperJsonData.copy()
             return dt
-        except:
+        except Exception as e:
             return None
 
     def getInputWidgetVariant(self):
@@ -397,7 +397,7 @@ class PinBase(IPin):
 
         try:
             self.setData(json.loads(jsonData['value'], cls=self.jsonDecoderClass()))
-        except:
+        except Exception as e:
             self.setData(self.defaultValue())
 
         if jsonData['bDirty']:
@@ -554,7 +554,10 @@ class PinBase(IPin):
                 if isinstance(data, DictElement):
                     self._data = DictElement(data[0], self.super.processData(data[1]))
                 else:
-                    self._data = self.super.processData(data)
+                    if isinstance(data, list):
+                        self._data = data
+                    else:
+                        self._data = self.super.processData(data)
             elif self.isArray():
                 if isinstance(data, list):
                     if self.validateArray(data, self.super.processData):
@@ -683,8 +686,9 @@ class PinBase(IPin):
         :type other: :class:`~PyFlow.Core.PinBase.PinBase`
         """
         if other.structureType != self.structureType:
-            self.changeStructure(other._currStructure)
-            self.onPinConnected.send(other)
+            if self.optionEnabled(PinOptions.ChangeTypeOnConnection) or self.structureType == StructureType.Multi:
+                self.changeStructure(other._currStructure)
+                self.onPinConnected.send(other)
 
     def getCurrentStructure(self):
         """Returns this pin structure type

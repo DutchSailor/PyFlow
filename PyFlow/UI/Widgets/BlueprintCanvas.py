@@ -797,11 +797,13 @@ class BlueprintCanvas(CanvasBase):
 
                     checked.add(connection)
 
+    # TODO: Rewrite comment stuff, it is SLOW!
     def validateCommentNodesOwnership(self, graph, bExpandComments=True):
         state = self.state
         self.state = CanvasState.COMMENT_OWNERSHIP_VALIDATION
         comments = {}
         defaultNodes = set()
+
         # expand all comment nodes and reset owning nodes info
         for node in graph.getNodesList():
             uiNode = node.getWrapper()
@@ -836,7 +838,6 @@ class BlueprintCanvas(CanvasBase):
         modifiers = event.modifiers()
         self.mousePressPose = event.pos()
         expandComments = False
-        self.validateCommentNodesOwnership(self.graphManager.activeGraph(), expandComments)
         currentInputAction = InputAction("temp", "temp", InputActionType.Mouse, event.button(), modifiers=modifiers)
         if any([not self.pressed_item,
                 isinstance(self.pressed_item, UIConnection) and modifiers != QtCore.Qt.AltModifier,
@@ -848,7 +849,8 @@ class BlueprintCanvas(CanvasBase):
             if self.currentPressedKey is not None and event.button() == QtCore.Qt.LeftButton:
                 if self.currentPressedKey == QtCore.Qt.Key_B:
                     spawnPos = self.mapToScene(self.mousePressPose)
-                    self.spawnNode("branch", spawnPos.x(), spawnPos.y())
+                    node = self.spawnNode("branch", spawnPos.x(), spawnPos.y())
+                    node.bCollapsed = False
 
             if isinstance(node, UINodeBase) and (node.isCommentNode or node.resizable):
                 super(BlueprintCanvas, self).mousePressEvent(event)
@@ -1298,20 +1300,17 @@ class BlueprintCanvas(CanvasBase):
         releasedNode = self.nodeFromInstance(self.released_item)
         pressedNode = self.nodeFromInstance(self.pressed_item)
         manhattanLengthTest = (self.mousePressPose - event.pos()).manhattanLength() <= 2
-        if all([event.button() == QtCore.Qt.LeftButton, releasedNode is not None,
-                pressedNode is not None, pressedNode == releasedNode, manhattanLengthTest]):
-
-                # check if clicking on node action button
-                if self.released_item is not None:
-                    if isinstance(self.released_item.parentItem(), NodeActionButtonBase):
-                        return
+        if all([event.button() == QtCore.Qt.LeftButton, releasedNode is not None, pressedNode is not None, pressedNode == releasedNode, manhattanLengthTest]):
+            # check if clicking on node action button
+            if self.released_item is not None:
+                if isinstance(self.released_item.parentItem(), NodeActionButtonBase):
+                    return
 
                 self.tryFillPropertiesView(pressedNode)
         elif event.button() == QtCore.Qt.LeftButton:
             self.requestClearProperties.emit()
         self.resizing = False
         self.updateReroutes(event, False)
-        self.validateCommentNodesOwnership(self.graphManager.activeGraph(), False)
 
     def removeItemByName(self, name):
         [self.scene().removeItem(i) for i in self.scene().items() if hasattr(i, 'name') and i.name == name]

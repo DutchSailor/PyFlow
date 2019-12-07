@@ -259,7 +259,7 @@ class UINodeBase(QGraphicsWidget, IPropertiesViewSupport, IUINode):
         self._rawNode.setWrapper(self)
         self._rawNode.killed.connect(self.kill)
         self._rawNode.tick.connect(self.Tick)
-        self._rawNode.errorOccured.connect(self.onNodeErrorOccured)
+        self._rawNode.errorOccured.connect(self.onNodeErrorOccurred)
         self._rawNode.errorCleared.connect(self.onNodeErrorCleared)
 
         self.custom_widget_data = {}
@@ -399,15 +399,29 @@ class UINodeBase(QGraphicsWidget, IPropertiesViewSupport, IUINode):
         self.actionToggleCollapse.triggered.connect(self.toggleCollapsed)
         self.actionToggleCollapse.setData(NodeActionButtonInfo(":/nodeCollapse.svg", CollapseNodeActionButton))
         self.actionRefresh = self._menu.addAction("Refresh")
-        self.actionRefresh.triggered.connect(self._rawNode.checkForErrors)
+        self.actionRefresh.triggered.connect(self.onRefresh)
         self.actionToggleExposeWidgetsToCompound = self._menu.addAction("Expose properties")
         self.actionToggleExposeWidgetsToCompound.triggered.connect(self.onToggleExposeProperties)
         self.actionCopyPath = self._menu.addAction("Copy path")
         self.actionCopyPath.triggered.connect(self.onCopyPathToClipboard)
 
+    def onRefresh(self):
+        self._rawNode.compute()
+        self._rawNode.checkForErrors()
+
     def onCopyPathToClipboard(self):
         QApplication.clipboard().clear()
         QApplication.clipboard().setText(self.path())
+
+    def getLastErrorMessage(self):
+        return self._rawNode.getLastErrorMessage()
+
+    def hoverEnterEvent(self, event):
+        super(UINodeBase, self).hoverEnterEvent(event)
+        if not self.isValid():
+            self.setToolTip(self.getLastErrorMessage())
+        else:
+            self.setToolTip(self.description())
 
     def eventDropOnCanvas(self):
         pass
@@ -502,7 +516,7 @@ class UINodeBase(QGraphicsWidget, IPropertiesViewSupport, IUINode):
         return self._rawNode.isUnderActiveGraph()
 
     def autoAffectPins(self):
-        self._rawNode.autoAffectPins()  
+        self._rawNode.autoAffectPins()
 
     def isCallable(self):
         return self._rawNode.isCallable()
@@ -662,7 +676,7 @@ class UINodeBase(QGraphicsWidget, IPropertiesViewSupport, IUINode):
             self.setHeaderHtml(newName)
             self.canvasRef().requestFillProperties.emit(self.createPropertiesWidget)
 
-    def onNodeErrorOccured(self, *args, **kwargs):
+    def onNodeErrorOccurred(self, *args, **kwargs):
         # change node ui to invalid
         errorString = args[0]
         error = {"Node": self._rawNode.name, "Error": errorString}
@@ -677,6 +691,7 @@ class UINodeBase(QGraphicsWidget, IPropertiesViewSupport, IUINode):
     def onNodeErrorCleared(self, *args, **kwargs):
         # restore node ui to clean
         self.setToolTip(rst2html(self.description()))
+        self.update()
 
     def toggleCollapsed(self):
         self.collapsed = not self.collapsed
@@ -900,7 +915,7 @@ class UINodeBase(QGraphicsWidget, IPropertiesViewSupport, IUINode):
                         self.groups["input"][groupName].setExpanded(expanded)
                     for groupName, expanded in jsonTemplate["wrapper"]["groups"]["output"].items():
                         self.groups["output"][groupName].setExpanded(expanded)
-                except:
+                except Exception as e:
                     pass
 
         description = self.description()
@@ -1060,7 +1075,7 @@ class UINodeBase(QGraphicsWidget, IPropertiesViewSupport, IUINode):
                         if node.__class__.__name__ not in classNameFilters:
                             continue
                     if node._rawNode.graph() != self.canvasRef().graphManager.activeGraph():
-                            continue
+                        continue
                     collidingNodes.add(node)
         return collidingNodes
 

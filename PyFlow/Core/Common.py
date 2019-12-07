@@ -324,8 +324,13 @@ def canConnectPins(src, dst):
         return True
 
     if not src.isArray() and dst.isArray():
-        if dst.optionEnabled(PinOptions.SupportsOnlyArrays) and not (src.canChangeStructure(dst._currStructure, []) or dst.canChangeStructure(src._currStructure, [], selfCheck=False)):
-            return False
+        if dst.optionEnabled(PinOptions.SupportsOnlyArrays):
+            if not src.canChangeStructure(dst._currStructure, []):
+                return False
+
+        if not dst.canChangeStructure(src._currStructure, [], selfCheck=False):
+            if not src.canChangeStructure(dst._currStructure, [], selfCheck=False):
+                return False
 
     if not src.isDict() and dst.isDict():
         if dst.optionEnabled(PinOptions.SupportsOnlyArrays):
@@ -686,7 +691,7 @@ class PFDict(dict):
 
     >>> isinstance(dataType, collections.Hashable)
 
-    To make a Class Hashable some methods should be implemented:
+    To make a class Hashable some methods should be implemented:
 
     Example:
     ::

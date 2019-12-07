@@ -135,6 +135,11 @@ class UICommentNode(UINodeBase):
         super(UICommentNode, self).mouseReleaseEvent(event)
         if not self.collapsed:
             collidingNodes = self.getCollidedNodes()
+
+            for owningNode in set(self.owningNodes):
+                if owningNode not in collidingNodes:
+                    self.owningNodes.remove(owningNode)
+
             for node in collidingNodes:
                 node.updateOwningCommentNode()
 
@@ -182,6 +187,9 @@ class UICommentNode(UINodeBase):
         intersectsDstNode = self.sceneBoundingRect().intersects(dstOwningNode.sceneBoundingRect())
         containsDstNode = self.sceneBoundingRect().contains(dstOwningNode.sceneBoundingRect())
         return intersectsSrcNode, containsSrcNode, intersectsDstNode, containsDstNode
+
+    def contextMenuEvent(self, event):
+        pass
 
     def aboutToCollapse(self, futureCollapseState):
         if self.canvasRef().state == CanvasState.COMMENT_OWNERSHIP_VALIDATION:
