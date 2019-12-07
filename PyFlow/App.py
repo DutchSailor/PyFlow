@@ -12,6 +12,12 @@
 ## See the License for the specific language governing permissions and
 ## limitations under the License.
 
+from nodeeditor.say import *
+import sys
+if sys.version_info[0] !=2:
+    from importlib import reload
+import nodeeditor.pfwrap as pfwrap
+reload (pfwrap)
 
 """Application class here
 """
@@ -427,6 +433,12 @@ class PyFlow(QMainWindow):
         if ds > 0:
             self.fps = int(1000.0 / ds)
 
+        #+hack++
+        if self.graphManager.get() == None:
+            sayl("ABBRUCH - kein graph manager")
+            return
+        #-hack end--
+            
         # Tick all graphs
         # each graph will tick owning raw nodes
         # each raw node will tick it's ui wrapper if it exists
@@ -513,7 +525,11 @@ class PyFlow(QMainWindow):
 
     def closeEvent(self, event):
 
-        shouldSave = self.shouldSave()
+        #+hack deactivate saving
+        #shouldSave = self.shouldSave()
+        shouldSave = QMessageBox.No
+        #-hack end
+
         if shouldSave == QMessageBox.Yes:
             if not self.save():
                 event.ignore()
@@ -565,6 +581,12 @@ class PyFlow(QMainWindow):
         SingletonDecorator.destroyAll()
 
         PyFlow.appInstance = None
+
+		#+hack cleanup  pfwrapper
+        pfwrap.deleteInstance()
+        del(FreeCAD.PF)
+        #-hack end
+        
 
         QMainWindow.closeEvent(self, event)
 
