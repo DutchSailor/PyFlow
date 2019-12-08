@@ -91,6 +91,9 @@ def getOrCreateMenu(menuBar, title):
 def winTitle():
     return "PyFlow v{0}".format(currentVersion().__str__())
 
+#-------------hack window events
+
+#--------------------------------
 
 ## App itself
 class PyFlow(QMainWindow):
@@ -582,7 +585,7 @@ class PyFlow(QMainWindow):
 
         PyFlow.appInstance = None
 
-		#+hack cleanup  pfwrapper
+        #+hack cleanup  pfwrapper
         pfwrap.deleteInstance()
         del(FreeCAD.PF)
         #-hack end
@@ -695,3 +698,25 @@ class PyFlow(QMainWindow):
                     PreferencesWindow().addCategory(categoryName, widgetClass())
                 PreferencesWindow().selectByName("General")
         return instance
+
+
+	# hack
+	# save and restore data when pyflow main window is minimized and comes back
+    def changeEvent(self, event):
+        if event.type() == QtCore.QEvent.WindowStateChange:
+            if self.windowState() & QtCore.Qt.WindowMinimized:
+                print('changeEvent: Minimised')
+                import nodeeditor.dev
+                reload (nodeeditor.dev)
+                nodeeditor.dev.run_PF_APP_WindowMinimized(self,event)
+
+            elif event.oldState() & QtCore.Qt.WindowMinimized:
+                print('changeEvent: Normal/Maximised/FullScreen')
+                import nodeeditor.dev
+                reload (nodeeditor.dev)
+                say("huhu")
+                nodeeditor.dev.run_PF_APP_WindowNOMinimized(self,event)
+                say("hhha")
+
+        QWidget.changeEvent(self, event)
+
