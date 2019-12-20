@@ -1327,25 +1327,9 @@ class UINodeBase(QGraphicsWidget, IPropertiesViewSupport, IUINode):
                 dataSetter = inp.call if inp.isExec() else inp.setData
                 w = createInputWidget(inp.dataType, dataSetter, inp.defaultValue(), inp.getInputWidgetVariant(), pinAnnotations=inp._rawPin.annotationDescriptionDict)
 
-
-
-
                 if w:
 
-
                     w.pin=inp
-
-                    #hack me
-                    # add backref to pin ui object and call initializer
-                    try:
-                        w.runpin()
-                    except:
-                        pass
-                    #hack end
-
-
-
-
                     w.setToolTip(inp.description)
                     inp.dataBeenSet.connect(w.setWidgetValueNoSignals)
                     w.blockWidgetSignals(True)

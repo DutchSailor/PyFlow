@@ -91,9 +91,6 @@ def getOrCreateMenu(menuBar, title):
 def winTitle():
     return "PyFlow v{0}".format(currentVersion().__str__())
 
-#-------------hack window events
-
-#--------------------------------
 
 ## App itself
 class PyFlow(QMainWindow):
