@@ -12,12 +12,6 @@
 ## See the License for the specific language governing permissions and
 ## limitations under the License.
 
-from nodeeditor.say import *
-import sys
-if sys.version_info[0] !=2:
-    from importlib import reload
-import nodeeditor.pfwrap as pfwrap
-reload (pfwrap)
 
 """Application class here
 """
@@ -435,7 +429,7 @@ class PyFlow(QMainWindow):
 
         #+hack++
         if self.graphManager.get() == None:
-            sayl("ABBRUCH - kein graph manager")
+            print("no graphManager found - aborting ..."
             return
         #-hack end--
             
@@ -526,8 +520,10 @@ class PyFlow(QMainWindow):
     def closeEvent(self, event):
 
         #+hack deactivate saving
-        #shouldSave = self.shouldSave()
-        shouldSave = QMessageBox.No
+        if False: # mkae this configurabel somewhere?
+            shouldSave = self.shouldSave()
+        else:
+            shouldSave = QMessageBox.No
         #-hack end
 
         if shouldSave == QMessageBox.Yes:
@@ -583,6 +579,7 @@ class PyFlow(QMainWindow):
         PyFlow.appInstance = None
 
         #+hack cleanup  pfwrapper
+        import nodeeditor.pfwrap as pfwrap
         pfwrap.deleteInstance()
         del(FreeCAD.PF)
         #-hack end
@@ -697,8 +694,8 @@ class PyFlow(QMainWindow):
         return instance
 
 
-	# hack
-	# save and restore data when pyflow main window is minimized and comes back
+    # hack
+    # save and restore data when pyflow main window is minimized and comes back
     def changeEvent(self, event):
         if event.type() == QtCore.QEvent.WindowStateChange:
             if self.windowState() & QtCore.Qt.WindowMinimized:
