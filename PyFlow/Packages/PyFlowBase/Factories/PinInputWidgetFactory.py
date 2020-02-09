@@ -46,21 +46,13 @@ class FloatInputWidgetSimple(InputWidgetSingle):
     Floating point data input widget without enhancements
     """
 
-##hack+
     def __init__(self, parent=None, **kwds):
         super(FloatInputWidgetSimple, self).__init__(parent=parent, **kwds)
         self.sb = valueBox(type="float", buttons=True)
         self.sb.setRange(FLOAT_RANGE_MIN, FLOAT_RANGE_MAX)
-        if "pinAnnotations" in kwds:
-            if kwds["pinAnnotations"] != None and "Step" in kwds["pinAnnotations"]:
-                self.sb.setSingleStep(kwds["pinAnnotations"]["Step"])
-            else:
-                self.sb.setSingleStep(0.01)
-
+        self.sb.setSingleStep(0.01)
         self.setWidget(self.sb)
         self.sb.valueChanged.connect(self.dataSetCallback)
-
-##hack-
 
     def blockWidgetSignals(self, bLocked):
         self.sb.blockSignals(bLocked)
@@ -97,7 +89,6 @@ class FloatInputWidget(InputWidgetSingle):
         self.setWidget(self.sb)
         # when spin box updated call setter function
         self.sb.valueChanged.connect(lambda val: self.dataSetCallback(val))
-
 
     def blockWidgetSignals(self, bLocked):
         self.sb.blockSignals(bLocked)
@@ -151,6 +142,7 @@ class IntInputWidget(InputWidgetSingle):
 
     def setWidgetValue(self, val):
         self.sb.setValue(int(val))
+
 
 
 class StringInputWidget(InputWidgetSingle):
@@ -302,22 +294,15 @@ def getInputWidget(dataType, dataSetter, defaultValue, widgetVariant=DEFAULT_WID
             continue
 
     if dataType == 'FloatPin':
-
-##hack+
-        if widgetVariant == DEFAULT_WIDGET_VARIANT:
-            return FloatInputWidgetSimple(dataSetCallback=dataSetter, defaultValue=defaultValue, **kwds)
-
-        else:
-            return None
-
+        if kwds is not None and "pinAnnotations" in kwds:
+            if kwds["pinAnnotations"] is not None and "ValueRange" in kwds["pinAnnotations"]:
+                return FloatInputWidget(dataSetCallback=dataSetter, defaultValue=defaultValue, **kwds)
+        return FloatInputWidgetSimple(dataSetCallback=dataSetter, defaultValue=defaultValue, **kwds)
     if dataType == 'IntPin':
-        if widgetVariant == DEFAULT_WIDGET_VARIANT:
-            return IntInputWidgetSimple(dataSetCallback=dataSetter, defaultValue=defaultValue, **kwds)
-
-        else:
-            return None
-##hack-
-
+        if kwds is not None and "pinAnnotations" in kwds:
+            if kwds["pinAnnotations"] is not None and "ValueRange" in kwds["pinAnnotations"]:
+                return IntInputWidget(dataSetCallback=dataSetter, defaultValue=defaultValue, **kwds)
+        return IntInputWidgetSimple(dataSetCallback=dataSetter, defaultValue=defaultValue, **kwds)
     if dataType == 'StringPin':
         if widgetVariant == DEFAULT_WIDGET_VARIANT:
             return StringInputWidget(dataSetCallback=dataSetter, defaultValue=defaultValue, **kwds)

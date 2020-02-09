@@ -592,16 +592,6 @@ class PinBase(IPin):
             if wrapper:
                 wrapper.update()
 
-        #hack me
-        try:
-            if self.recomputeNode and not self.hasConnections():
-                self.owningNode().compute()
-        except:
-            pass
-
-        ## Calling execution pin
-        #hack end
-
 
     def call(self, *args, **kwargs):
         if self.owningNode().isValid():

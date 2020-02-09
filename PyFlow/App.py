@@ -427,12 +427,6 @@ class PyFlow(QMainWindow):
         if ds > 0:
             self.fps = int(1000.0 / ds)
 
-        #+hack++
-        if self.graphManager.get() == None:
-            print("no graphManager found - aborting ..."
-            return
-        #-hack end--
-            
         # Tick all graphs
         # each graph will tick owning raw nodes
         # each raw node will tick it's ui wrapper if it exists
@@ -519,13 +513,7 @@ class PyFlow(QMainWindow):
 
     def closeEvent(self, event):
 
-        #+hack deactivate saving
-        if False: # mkae this configurabel somewhere?
-            shouldSave = self.shouldSave()
-        else:
-            shouldSave = QMessageBox.No
-        #-hack end
-
+        shouldSave = self.shouldSave()
         if shouldSave == QMessageBox.Yes:
             if not self.save():
                 event.ignore()
@@ -577,13 +565,6 @@ class PyFlow(QMainWindow):
         SingletonDecorator.destroyAll()
 
         PyFlow.appInstance = None
-
-        #+hack cleanup  pfwrapper
-        import nodeeditor.pfwrap as pfwrap
-        pfwrap.deleteInstance()
-        del(FreeCAD.PF)
-        #-hack end
-        
 
         QMainWindow.closeEvent(self, event)
 
@@ -692,25 +673,3 @@ class PyFlow(QMainWindow):
                     PreferencesWindow().addCategory(categoryName, widgetClass())
                 PreferencesWindow().selectByName("General")
         return instance
-
-
-    # hack
-    # save and restore data when pyflow main window is minimized and comes back
-    def changeEvent(self, event):
-        if event.type() == QtCore.QEvent.WindowStateChange:
-            if self.windowState() & QtCore.Qt.WindowMinimized:
-                print('changeEvent: Minimised')
-                import nodeeditor.dev
-                reload (nodeeditor.dev)
-                nodeeditor.dev.run_PF_APP_WindowMinimized(self,event)
-
-            elif event.oldState() & QtCore.Qt.WindowMinimized:
-                print('changeEvent: Normal/Maximised/FullScreen')
-                import nodeeditor.dev
-                reload (nodeeditor.dev)
-                say("huhu")
-                nodeeditor.dev.run_PF_APP_WindowNOMinimized(self,event)
-                say("hhha")
-
-        QWidget.changeEvent(self, event)
-

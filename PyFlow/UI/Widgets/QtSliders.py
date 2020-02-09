@@ -1170,8 +1170,13 @@ class pyf_RampSpline(QtWidgets.QGraphicsView):
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setRenderHint(QtGui.QPainter.Antialiasing)
-        self.setMaximumHeight(60)
-        self.setMinimumHeight(60)
+        
+        #self.setMaximumHeight(60)
+        #self.setMinimumHeight(60)
+        #self.setMaximumHeight(160)
+        self.setMinimumHeight(160)
+
+        
         self.setBackgroundBrush(QtGui.QBrush(QtGui.QColor(30, 30, 30)))
         self.mousePressPose = QtCore.QPointF(0, 0)
         self.mousePos = QtCore.QPointF(0, 0)
