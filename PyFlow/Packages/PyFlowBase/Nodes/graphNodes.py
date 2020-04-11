@@ -24,7 +24,7 @@ class graphInputs(NodeBase):
     """
     def __init__(self, name):
         super(graphInputs, self).__init__(name)
-        self.bCacheEnabled = False
+        self.bCacheEnabled = True
 
     def getUniqPinName(self, name):
         result = name
@@ -57,10 +57,15 @@ class graphInputs(NodeBase):
             p.enableOptions(PinOptions.AllowAny | PinOptions.DictElementSupported)
         return p
 
+
     def compute(self, *args, **kwargs):
         for o in self.outputs.values():
             for i in o.affected_by:
-                o.setData(i.getData())
+                if len(i.affected_by)>0:
+                    for e in i.affected_by:
+                        o.setData(e.getData())
+                else:
+                    o.setData(i.getData())
 
     def postCreate(self, jsonTemplate=None):
         super(graphInputs, self).postCreate(jsonTemplate=jsonTemplate)
@@ -124,6 +129,10 @@ class graphOutputs(NodeBase):
         return p
 
     def compute(self, *args, **kwargs):
+        compoundNode = None
         for i in self.inputs.values():
             for o in i.affects:
-                o.setData(i.getData())
+                compoundNode = o.owningNode()
+                o.setDirty()
+        if compoundNode:
+            compoundNode.processNode()

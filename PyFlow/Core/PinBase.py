@@ -81,6 +81,7 @@ class PinBase(IPin):
         self.containerTypeChanged = Signal()
         self.dataBeenSet = Signal(object)
         self.dictChanged = Signal(str)
+        self.markedAsDirty =Signal()
 
         self.errorOccured = Signal(object)
         self.errorCleared = Signal()
@@ -400,11 +401,6 @@ class PinBase(IPin):
         except Exception as e:
             self.setData(self.defaultValue())
 
-        if jsonData['bDirty']:
-            self.setDirty()
-        else:
-            self.setClean()
-
         if "wrapper" in jsonData:
             self.__wrapperJsonData = jsonData["wrapper"]
 
@@ -419,8 +415,8 @@ class PinBase(IPin):
         if not self.dataType == "AnyPin":
             if storable:
                 serializedData = json.dumps(self.currentData(), cls=self.jsonEncoderClass())
-            else:
-                serializedData = json.dumps(self.defaultValue(), cls=self.jsonEncoderClass())
+            #else:
+            #    serializedData = json.dumps(self.defaultValue(), cls=self.jsonEncoderClass())
 
         data = {
             'name': self.name,
@@ -430,7 +426,6 @@ class PinBase(IPin):
             'direction': int(self.direction),
             'value': serializedData,
             'uuid': str(self.uid),
-            'bDirty': self.dirty,
             'linkedTo': list(self.linkedTo),
             'pinIndex': self.pinIndex,
             'options': [i.value for i in PinOptions if self.optionEnabled(i)],
@@ -547,7 +542,7 @@ class PinBase(IPin):
         if self.super is None:
             return
         try:
-            self.setClean()
+            self.setDirty()
             if isinstance(data, DictElement) and not self.optionEnabled(PinOptions.DictElementSupported):
                 data = data[1]
             if not self.isArray() and not self.isDict():
@@ -578,7 +573,11 @@ class PinBase(IPin):
             if self.direction == PinDirection.Output:
                 for i in self.affects:
                     i.setData(self.currentData())
-                    i.setClean()
+
+            elif self.direction == PinDirection.Input and self.owningNode().__class__.__name__ == "compound":
+                for i in self.affects:
+                    i.setData(self.currentData())
+            
             if self.direction == PinDirection.Input or self.optionEnabled(PinOptions.AlwaysPushDirty):
                 push(self)
             self.clearError()
@@ -588,9 +587,9 @@ class PinBase(IPin):
             self.setDirty()
         if self._lastError is not None:
             self.owningNode().setError(self._lastError)
-            wrapper = self.owningNode().getWrapper()
-            if wrapper:
-                wrapper.update()
+        wrapper = self.owningNode().getWrapper()
+        if wrapper:
+            wrapper.update()
 
 
     def call(self, *args, **kwargs):
@@ -1004,6 +1003,7 @@ class PinBase(IPin):
         self.dirty = True
         for i in self.affects:
             i.dirty = True
+        self.markedAsDirty.send()
 
     def hasConnections(self):
         """Return the number of connections this pin has

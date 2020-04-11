@@ -38,7 +38,7 @@ class DefaultLib(FunctionLibraryBase):
 
     @staticmethod
     @IMPLEMENT_NODE(returns=('AnyPin', None, {PinSpecifires.ENABLED_OPTIONS: PinOptions.ArraySupported | PinOptions.AllowAny | PinOptions.DictElementSupported, PinSpecifires.CONSTRAINT: "1", PinSpecifires.STRUCT_CONSTRAINT: "1"}),
-                    meta={NodeMeta.CATEGORY: 'Utils', NodeMeta.KEYWORDS: ['id'], NodeMeta.CACHE_ENABLED: False})
+                    meta={NodeMeta.CATEGORY: 'Utils', NodeMeta.KEYWORDS: ['id']})
     def copyObject(obj=('AnyPin', None, {PinSpecifires.ENABLED_OPTIONS: PinOptions.ArraySupported | PinOptions.AllowAny | PinOptions.DictElementSupported, PinSpecifires.CONSTRAINT: "1", PinSpecifires.STRUCT_CONSTRAINT: "1"}), deepCopy=("BoolPin", False)):
         '''Shallow or deep copy of an object.'''
         copyFunction = deepcopy if deepCopy else copy
@@ -87,7 +87,7 @@ class DefaultLib(FunctionLibraryBase):
         return getattr(obj, name)
 
     @staticmethod
-    @IMPLEMENT_NODE(returns=('AnyPin', None, PIN_ALLOWS_ANYTHING.copy()), meta={NodeMeta.CATEGORY: 'Common', NodeMeta.KEYWORDS: []})
+    @IMPLEMENT_NODE(returns=('AnyPin', None, PIN_ALLOWS_ANYTHING.copy()), meta={NodeMeta.CATEGORY: 'Common', NodeMeta.KEYWORDS: [],NodeMeta.CACHE_ENABLED: False})
     def getGlobalVar(name=('StringPin', 'var1')):
         '''Retrieves value from globals()'''
         if name in globals():
@@ -111,10 +111,7 @@ class DefaultLib(FunctionLibraryBase):
     @IMPLEMENT_NODE(returns=('FloatPin', 0.0, {PinSpecifires.ENABLED_OPTIONS: PinOptions.AlwaysPushDirty}), meta={NodeMeta.CATEGORY: 'Utils', NodeMeta.KEYWORDS: [], NodeMeta.CACHE_ENABLED: False})
     def clock():
         '''Returns the CPU time or real time since the start of the process or since the first call of process_time().'''
-        if IS_PYTHON2:
-            return time.clock()
-        else:
-            return time.process_time()
+        return currentProcessorTime()
 
     @staticmethod
     @IMPLEMENT_NODE(returns=('AnyPin', None, {PinSpecifires.CONSTRAINT: "1", PinSpecifires.ENABLED_OPTIONS: PinOptions.ArraySupported | PinOptions.AllowAny | PinOptions.DictElementSupported}), meta={NodeMeta.CATEGORY: 'DefaultLib', NodeMeta.KEYWORDS: []})
@@ -138,7 +135,7 @@ class DefaultLib(FunctionLibraryBase):
         return t
 
     @staticmethod
-    @IMPLEMENT_NODE(returns=('BoolPin', False), meta={NodeMeta.CATEGORY: 'DefaultLib', NodeMeta.KEYWORDS: ['in'], NodeMeta.CACHE_ENABLED: False})
+    @IMPLEMENT_NODE(returns=('BoolPin', False), meta={NodeMeta.CATEGORY: 'DefaultLib', NodeMeta.KEYWORDS: ['in']})
     def contains(obj=('AnyPin', None, {PinSpecifires.CONSTRAINT: "1", PinSpecifires.ENABLED_OPTIONS: PinOptions.ArraySupported | PinOptions.AllowAny | PinOptions.DictElementSupported}), element=("AnyPin", None, {PinSpecifires.CONSTRAINT: "1"})):
         """Python's **in** keyword. `element in obj` will be executed"""
         try:
@@ -157,7 +154,7 @@ class DefaultLib(FunctionLibraryBase):
 
     @staticmethod
     @IMPLEMENT_NODE(returns=("AnyPin", None, {PinSpecifires.CONSTRAINT: "1", PinSpecifires.ENABLED_OPTIONS: PinOptions.ArraySupported | PinOptions.AllowAny}),
-                    meta={NodeMeta.CATEGORY: 'DefaultLib', NodeMeta.KEYWORDS: ['get'], NodeMeta.CACHE_ENABLED: False})
+                    meta={NodeMeta.CATEGORY: 'DefaultLib', NodeMeta.KEYWORDS: ['get']})
     def getItem(obj=('AnyPin', None, {PinSpecifires.CONSTRAINT: "1", PinSpecifires.ENABLED_OPTIONS: PinOptions.ArraySupported | PinOptions.AllowAny}),
                 element=("AnyPin", None, {PinSpecifires.SUPPORTED_DATA_TYPES: getHashableDataTypes()}),
                 result=(REF, ("BoolPin", False))):
@@ -170,7 +167,7 @@ class DefaultLib(FunctionLibraryBase):
             return None
 
     @staticmethod
-    @IMPLEMENT_NODE(returns=("AnyPin", None, {PinSpecifires.CONSTRAINT: "1", PinSpecifires.STRUCT_CONSTRAINT: "1", PinSpecifires.ENABLED_OPTIONS: PinOptions.ArraySupported | PinOptions.AllowAny}), meta={NodeMeta.CATEGORY: 'DefaultLib', NodeMeta.KEYWORDS: ['get'], 'CacheEnabled': False})
+    @IMPLEMENT_NODE(returns=("AnyPin", None, {PinSpecifires.CONSTRAINT: "1", PinSpecifires.STRUCT_CONSTRAINT: "1", PinSpecifires.ENABLED_OPTIONS: PinOptions.ArraySupported | PinOptions.AllowAny}), meta={NodeMeta.CATEGORY: 'DefaultLib', NodeMeta.KEYWORDS: ['get']})
     def appendTo(obj=('AnyPin', None, {PinSpecifires.CONSTRAINT: "1", PinSpecifires.STRUCT_CONSTRAINT: "1", PinSpecifires.ENABLED_OPTIONS: PinOptions.ArraySupported | PinOptions.AllowAny}),
                  element=("AnyPin", None, {PinSpecifires.CONSTRAINT: "1"}),
                  result=(REF, ('BoolPin', False))):

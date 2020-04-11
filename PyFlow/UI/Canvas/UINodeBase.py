@@ -255,12 +255,17 @@ class UINodeBase(QGraphicsWidget, IPropertiesViewSupport, IUINode):
         self.setZValue(NodeDefaults().Z_LAYER)
 
         # Raw Node Definition
+        self.dirty = True
+        self.computing = False
         self._rawNode = raw_node
         self._rawNode.setWrapper(self)
         self._rawNode.killed.connect(self.kill)
         self._rawNode.tick.connect(self.Tick)
         self._rawNode.errorOccured.connect(self.onNodeErrorOccurred)
         self._rawNode.errorCleared.connect(self.onNodeErrorCleared)
+        self._rawNode.setDirty.connect(self.setDirty)
+        self._rawNode.computing.connect(self.setComputing)
+        self._rawNode.computed.connect(self.setClean)
 
         self.custom_widget_data = {}
         self.heartBeatDelay = 0.5
@@ -404,10 +409,10 @@ class UINodeBase(QGraphicsWidget, IPropertiesViewSupport, IUINode):
         self.actionToggleExposeWidgetsToCompound.triggered.connect(self.onToggleExposeProperties)
         self.actionCopyPath = self._menu.addAction("Copy path")
         self.actionCopyPath.triggered.connect(self.onCopyPathToClipboard)
+        self._rawNode.computed.connect(self.onComputed)
 
     def onRefresh(self):
-        self._rawNode.compute()
-        self._rawNode.checkForErrors()
+        self._rawNode.processNode()
 
     def onCopyPathToClipboard(self):
         QApplication.clipboard().clear()
@@ -421,7 +426,7 @@ class UINodeBase(QGraphicsWidget, IPropertiesViewSupport, IUINode):
         if not self.isValid():
             self.setToolTip(self.getLastErrorMessage())
         else:
-            self.setToolTip(self.description())
+            self.setToolTip("%s\nComputingTime: %s"%(rst2html(self.description()),self._rawNode._computingTime))
 
     def eventDropOnCanvas(self):
         pass
@@ -432,7 +437,7 @@ class UINodeBase(QGraphicsWidget, IPropertiesViewSupport, IUINode):
     def setNameValidationEnabled(self, bEnabled=True):
         self.nodeNameWidget.labelItem.validator = None if not bEnabled else NodeNameValidator()
 
-    def isNameValidatoinEnabled(self):
+    def isNameValidationEnabled(self):
         return self.nodeNameWidget.labelItem.validator is not None
 
     def onToggleExposeProperties(self):
@@ -669,7 +674,7 @@ class UINodeBase(QGraphicsWidget, IPropertiesViewSupport, IUINode):
         """
         if accepted:
             name = self.nodeNameWidget.getPlainText()
-            if self.isNameValidatoinEnabled():
+            if self.isNameValidationEnabled():
                 name = name.replace(" ", "")
             newName = self.canvasRef().graphManager.getUniqNodeName(name)
             self.setName(newName)
@@ -690,7 +695,11 @@ class UINodeBase(QGraphicsWidget, IPropertiesViewSupport, IUINode):
 
     def onNodeErrorCleared(self, *args, **kwargs):
         # restore node ui to clean
-        self.setToolTip(rst2html(self.description()))
+        self.setToolTip("%s\nComputingTime: %s"%(rst2html(self.description()),self._rawNode._computingTime))
+        self.update()
+
+    def onComputed(self, *args, **kwargs):
+        self.setToolTip("%s\nComputingTime: %s"%(rst2html(self.description()),self._rawNode._computingTime))
         self.update()
 
     def toggleCollapsed(self):
@@ -776,11 +785,14 @@ class UINodeBase(QGraphicsWidget, IPropertiesViewSupport, IUINode):
         except Exception as e:
             print(e)
             pass
-
+        custCount = 0
         for cust in range(0, self.customLayout.count()):
             out = self.customLayout.itemAt(cust)
-            h += out.minimumHeight()
-        h += self.customLayout.spacing() * self.customLayout.count()
+            if out.isVisible():
+                h += out.minimumHeight()
+                custCount += 1
+        if custCount > 0:
+            h += self.customLayout.spacing() * self.customLayout.count()
 
         if h < self.minHeight:
             h = self.minHeight
@@ -922,7 +934,9 @@ class UINodeBase(QGraphicsWidget, IPropertiesViewSupport, IUINode):
         if self.isDeprecated():
             description = self.deprecationMessage()
         if description:
-            self.setToolTip(rst2html(description))
+            self.setToolTip("%s\nComputingTime: %s"%(rst2html(self.description()),self._rawNode._computingTime))
+        else:
+            self.setToolTip("\nComputingTime: %s"%self._rawNode._computingTime)
         if self.resizable:
             w = self.getNodeWidth()
             h = self.getNodeHeight()
@@ -1078,6 +1092,20 @@ class UINodeBase(QGraphicsWidget, IPropertiesViewSupport, IUINode):
                         continue
                     collidingNodes.add(node)
         return collidingNodes
+
+    def setDirty(self,*args, **kwargs):
+        self.computing = False
+        self.dirty = True
+        self.update()
+
+    def setComputing(self,*args, **kwargs):
+        self.computing = True
+        self.update()
+
+    def setClean(self,*args, **kwargs):
+        self.computing = False
+        self.dirty = False
+        self.update()
 
     def paint(self, painter, option, widget):
         NodePainter.default(self, painter, option, widget)
@@ -1328,7 +1356,7 @@ class UINodeBase(QGraphicsWidget, IPropertiesViewSupport, IUINode):
                 w = createInputWidget(inp.dataType, dataSetter, inp.defaultValue(), inp.getInputWidgetVariant(), pinAnnotations=inp._rawPin.annotationDescriptionDict)
                 if w:
                     w.setToolTip(inp.description)
-                    inp.dataBeenSet.connect(w.setWidgetValueNoSignals)
+                    inp._rawPin.dataBeenSet.connect(w.setWidgetValueNoSignals)
                     w.blockWidgetSignals(True)
                     data = inp.currentData()
                     if isinstance(inp.currentData(), DictElement):
@@ -1353,7 +1381,7 @@ class UINodeBase(QGraphicsWidget, IPropertiesViewSupport, IUINode):
             w = createInputWidget(inp.dataType, dataSetter, inp.defaultValue(), inp.getInputWidgetVariant(), pinAnnotations=inp._rawPin.annotationDescriptionDict)
             if w:
                 w.setToolTip(inp.description)
-                inp.dataBeenSet.connect(w.setWidgetValueNoSignals)
+                inp._rawPin.dataBeenSet.connect(w.setWidgetValueNoSignals)
                 w.blockWidgetSignals(True)
                 data = inp.currentData()
                 if isinstance(inp.currentData(), DictElement):

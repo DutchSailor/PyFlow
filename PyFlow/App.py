@@ -20,7 +20,6 @@ import os
 import sys
 import subprocess
 import json
-from time import clock
 import pkgutil
 import uuid
 import shutil
@@ -32,6 +31,7 @@ from Qt import QtCore
 from Qt.QtWidgets import *
 
 from PyFlow import GET_PACKAGES
+from PyFlow.Core.Common import currentProcessorTime
 from PyFlow.Core.Common import SingletonDecorator
 from PyFlow.Core.PathsRegistry import PathsRegistry
 from PyFlow.Core.version import *
@@ -422,7 +422,7 @@ class PyFlow(QMainWindow):
         self.tick_timer.timeout.disconnect()
 
     def mainLoop(self):
-        deltaTime = clock() - self._lastClock
+        deltaTime = currentProcessorTime() - self._lastClock
         ds = (deltaTime * 1000.0)
         if ds > 0:
             self.fps = int(1000.0 / ds)
@@ -435,7 +435,7 @@ class PyFlow(QMainWindow):
         # Tick canvas. Update ui only stuff such animation etc.
         self.canvasWidget.Tick(deltaTime)
 
-        self._lastClock = clock()
+        self._lastClock = currentProcessorTime()
 
     def createPopupMenu(self):
         pass
@@ -486,8 +486,8 @@ class PyFlow(QMainWindow):
                         tool.show()
                         tool.onShow()
                         # Highlight window
-                        print("highlight", tool.uniqueName())
-                return
+                        #print("highlight", tool.uniqueName())
+                        return tool
         ToolInstance = self.createToolInstanceByClass(packageName, name, DockTool)
         if ToolInstance:
             self.registerToolInstance(ToolInstance)
@@ -657,6 +657,7 @@ class PyFlow(QMainWindow):
                         # This dock tool data been saved on last shutdown
                         settings.beginGroup(dockToolGroupName)
                         if dockToolGroupName in [t.uniqueName() for t in instance._tools]:
+                            settings.endGroup()
                             continue
                         toolName = dockToolGroupName.split("::")[0]
                         instance.invokeDockToolByName(packageName, toolName, settings)

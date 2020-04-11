@@ -26,6 +26,8 @@ from PyFlow.Core.PathsRegistry import PathsRegistry
 from PyFlow.UI.Widgets.EnumComboBox import EnumComboBox
 from PyFlow.UI.Widgets.InputWidgets import *
 from PyFlow.UI.Widgets.QtSliders import *
+from PyFlow.UI.Widgets.FileDialog import FileDialog
+
 
 
 class ExecInputWidget(InputWidgetSingle):
@@ -208,8 +210,9 @@ class PathInputWidget(InputWidgetSingle):
     Path input widget
     """
 
-    def __init__(self, parent=None, **kwds):
+    def __init__(self, mode="all", parent=None, **kwds):
         super(PathInputWidget, self).__init__(parent=parent, **kwds)
+        self.mode = mode
         self.content = QWidget()
         self.content.setContentsMargins(0, 0, 0, 0)
         self.pathLayout = QHBoxLayout(self.content)
@@ -224,15 +227,15 @@ class PathInputWidget(InputWidgetSingle):
         self.le.textChanged.connect(lambda val: self.dataSetCallback(val))
 
     def getPath(self):
-        directory = QFileDialog.getExistingDirectory(None, "Select dir", "")
-        self.le.setText(directory)
+        dlg = FileDialog(self.mode)
+        if dlg.exec_() == QFileDialog.Accepted and len(dlg.selectedFiles())>0:
+            self.le.setText(dlg.selectedFiles()[0])
 
     def blockWidgetSignals(self, bLocked):
         self.le.blockSignals(bLocked)
 
     def setWidgetValue(self, val):
         self.le.setText(str(val))
-
 
 class BoolInputWidget(InputWidgetSingle):
     """Boolean data input widget"""
@@ -307,7 +310,11 @@ def getInputWidget(dataType, dataSetter, defaultValue, widgetVariant=DEFAULT_WID
         if widgetVariant == DEFAULT_WIDGET_VARIANT:
             return StringInputWidget(dataSetCallback=dataSetter, defaultValue=defaultValue, **kwds)
         elif widgetVariant == "PathWidget":
-            return PathInputWidget(dataSetCallback=dataSetter, defaultValue=defaultValue, **kwds)
+            return PathInputWidget(mode="all", dataSetCallback=dataSetter, defaultValue=defaultValue, **kwds)
+        elif widgetVariant == "FilePathWidget":
+            return PathInputWidget(mode="file", dataSetCallback=dataSetter, defaultValue=defaultValue, **kwds)
+        elif widgetVariant == "FolderPathWidget":
+            return PathInputWidget(mode="directory", dataSetCallback=dataSetter, defaultValue=defaultValue, **kwds)            
         elif widgetVariant == "EnumWidget":
             return EnumInputWidget(dataSetCallback=dataSetter, defaultValue=defaultValue, **kwds)
         elif widgetVariant == "ObjectPathWIdget":

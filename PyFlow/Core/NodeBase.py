@@ -34,6 +34,7 @@ from PyFlow.Core.Common import *
 from PyFlow.Core.Interfaces import INode
 from PyFlow import CreateRawPin
 
+from datetime import datetime
 
 class NodePinsSuggestionsHelper(object):
     """Describes node's pins types and structs for inputs and outputs
@@ -66,15 +67,19 @@ class NodeBase(INode):
 
     def __init__(self, name, uid=None):
         super(NodeBase, self).__init__()
-        self.bCacheEnabled = False
+        self.bCacheEnabled = True
         self.cacheMaxSize = 1000
         self.cache = {}
 
         self.killed = Signal()
         self.tick = Signal(float)
+        self.setDirty = Signal()
+        self.computing = Signal()
+        self.computed = Signal()
         self.errorOccured = Signal(object)
         self.errorCleared = Signal()
 
+        self.dirty = True
         self._uid = uuid.uuid4() if uid is None else uid
         self.graph = None
         self.name = name
@@ -95,6 +100,7 @@ class NodeBase(INode):
         self._deprecated = False
         self._deprecationMessage = "This node is deprecated"
         self._experimental = False
+        self._computingTime = None
 
     def setDeprecated(self, message):
         self._deprecated = True
@@ -363,47 +369,31 @@ class NodeBase(INode):
     def setName(self, name):
         self.name = str(name)
 
-    def useCache(self):
-        # if cached results exists - return them without calling compute
-        args = tuple([pin.currentData() for pin in self.inputs.values() if pin.IsValuePin()])
-
-        # not hashable types will not be cached
-        for arg in args:
-            if not isinstance(arg, collections.Hashable):
-                return False
-
-        if args in self.cache:
-            for outPin, data in self.cache[args].items():
-                outPin.setData(data)
-            return True
+    def isDirty(self):
+        inpDirty = any([pin.dirty for pin in self.inputs.values() if pin.IsValuePin()])
+        outDirty = any([pin.dirty for pin in self.outputs.values() if pin.IsValuePin()])
+        return inpDirty or outDirty
 
     def afterCompute(self):
-        if len(self.cache) >= self.cacheMaxSize:
-            return
-
-        # cache results
-        args = tuple([pin.currentData() for pin in self.inputs.values() if pin.IsValuePin()])
-        for arg in args:
-            if not isinstance(arg, collections.Hashable):
-                return
-
-        cache = {}
+        for pin in self.inputs.values():
+            pin.setClean()
         for pin in self.outputs.values():
-            cache[pin] = pin.currentData()
-        self.cache[args] = cache
+            pin.setClean()
 
     def processNode(self, *args, **kwargs):
-        if not self.isValid():
-            return
+        start=datetime.now()
+        #if not self.isValid():
+        #    return
+        self.computing.send()
         if self.bCacheEnabled:
-            if not self.useCache():
+            if self.isDirty():
                 try:
                     self.compute()
                     self.clearError()
                     self.checkForErrors()
+                    self.afterCompute()
                 except Exception as e:
                     self.setError(e)
-            self.afterCompute()
         else:
             try:
                 self.compute()
@@ -411,6 +401,9 @@ class NodeBase(INode):
                 self.checkForErrors()
             except Exception as e:
                 self.setError(e)
+        delta = (datetime.now()-start)
+        self._computingTime =delta
+        self.computed.send()
 
     # INode interface
 
@@ -531,6 +524,8 @@ class NodeBase(INode):
             p.updateConstraint(constraint)
         if structConstraint is not None:
             p.updateStructConstraint(structConstraint)
+        p.dataBeenSet.connect(self.setDirty.send)
+        p.markedAsDirty.connect(self.setDirty.send)
         return p
 
     def createOutputPin(self, pinName, dataType, defaultValue=None, structure=StructureType.Single, constraint=None, structConstraint=None, supportedPinDataTypes=[], group=""):
@@ -719,8 +714,8 @@ class NodeBase(INode):
             self.bCallable = True
 
         # make no sense cache nodes without inputs
-        if len(self.inputs) == 0:
-            self.bCacheEnabled = False
+        #if len(self.inputs) == 0:
+        #    self.bCacheEnabled = False
 
         self.autoAffectPins()
         self.checkForErrors()
@@ -808,6 +803,7 @@ class NodeBase(INode):
             for ref in refs:
                 if not ref.isExec():
                     kwds[ref.name] = ref.setData
+            foo.owningNode = self
             result = foo(**kwds)
             if returnType is not None:
                 self.setData(str('out'), result)
