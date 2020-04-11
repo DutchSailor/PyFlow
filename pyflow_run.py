@@ -15,6 +15,7 @@
 
 import sys
 from PyFlow import graphUiParser
+sys.path.append('/home/thomas/.FreeCAD/Mod.PyFlow/')
 
 if __name__ == '__main__':
     graphUiParser.run(sys.argv[1])
